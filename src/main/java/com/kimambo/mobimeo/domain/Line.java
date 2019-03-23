@@ -2,7 +2,7 @@ package com.kimambo.mobimeo.domain;
 
 public class Line {
 
-    public Line(){
+    private Line(){
 
     }
 
