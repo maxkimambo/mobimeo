@@ -1,9 +1,10 @@
 package com.kimambo.mobimeo.repository;
 
 import com.kimambo.mobimeo.domain.Line;
-import com.kimambo.mobimeo.repository.LinesRepository;
+import com.kimambo.mobimeo.exceptions.InvalidFormatException;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +14,18 @@ public class LinesRepositoryImpl implements LinesRepository {
     private List<Line> lines;
 
     public LinesRepositoryImpl() {
+
         lines = new ArrayList<>();
-        lines.add(new Line(0, "M4"));
-        lines.add(new Line(1, "200"));
-        lines.add(new Line(2, "S75"));
+        try {
+            LineParser lineParser = new LineParser();
+            CsvReader<Line> linesReader = new CsvReaderImpl<>("./data/lines.csv", lineParser);
+            lines = linesReader.getValues();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

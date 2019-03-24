@@ -1,10 +1,12 @@
 package com.kimambo.mobimeo.repository;
 
-import com.kimambo.mobimeo.domain.Line;
 import com.kimambo.mobimeo.domain.ScheduleItem;
+import com.kimambo.mobimeo.domain.Time;
+import com.kimambo.mobimeo.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,27 +28,31 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         this.delayRepository = delayRepository;
 
 
-        schedule = new ArrayList<>();
+        try {
+            schedule = new ArrayList<>();
 
-        schedule.add(new ScheduleItem(linesRepository.getById(0),
-                stopRepository.getById(0),
-                LocalTime.of(10, 0),
-                delayRepository.getDelayByLineName(linesRepository.getById(0).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(0), stopRepository.getById(1), LocalTime.of(10, 2), delayRepository.getDelayByLineName(linesRepository.getById(0).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(0), stopRepository.getById(2), LocalTime.of(10, 5), delayRepository.getDelayByLineName(linesRepository.getById(0).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(0), stopRepository.getById(3), LocalTime.of(10, 7), delayRepository.getDelayByLineName(linesRepository.getById(0).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(0), stopRepository.getById(4), LocalTime.of(10, 9), delayRepository.getDelayByLineName(linesRepository.getById(0).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(1), stopRepository.getById(5), LocalTime.of(10, 1), delayRepository.getDelayByLineName(linesRepository.getById(1).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(1), stopRepository.getById(6), LocalTime.of(10, 4), delayRepository.getDelayByLineName(linesRepository.getById(1).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(1), stopRepository.getById(7), LocalTime.of(10, 6), delayRepository.getDelayByLineName(linesRepository.getById(1).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(1), stopRepository.getById(3), LocalTime.of(10, 8), delayRepository.getDelayByLineName(linesRepository.getById(1).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(1), stopRepository.getById(8), LocalTime.of(10, 10), delayRepository.getDelayByLineName(linesRepository.getById(1).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(2), stopRepository.getById(3), LocalTime.of(10, 8), delayRepository.getDelayByLineName(linesRepository.getById(2).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(2), stopRepository.getById(9), LocalTime.of(10, 9), delayRepository.getDelayByLineName(linesRepository.getById(2).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(2), stopRepository.getById(4), LocalTime.of(10, 11), delayRepository.getDelayByLineName(linesRepository.getById(2).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(2), stopRepository.getById(10), LocalTime.of(10, 13), delayRepository.getDelayByLineName(linesRepository.getById(2).getName())));
-        schedule.add(new ScheduleItem(linesRepository.getById(2), stopRepository.getById(11), LocalTime.of(10, 15), delayRepository.getDelayByLineName(linesRepository.getById(2).getName())));
+            // parse csvfile
+            TimesParser scheduleParser = new TimesParser();
+            CsvReader<Time> timesReader = new CsvReaderImpl<>("./data/times.csv", scheduleParser);
 
+            List<Time> scheduleItems = timesReader.getValues();
+            for (Time time : scheduleItems){
+
+                schedule.add(new ScheduleItem(linesRepository.getById(time.getLineId()),
+                stopRepository.getById(time.getStopId()),
+                time.getArrivalTime(),
+                delayRepository.getDelayByLineName(linesRepository.getById(time.getLineId()).getName())));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void init(){
 
     }
 

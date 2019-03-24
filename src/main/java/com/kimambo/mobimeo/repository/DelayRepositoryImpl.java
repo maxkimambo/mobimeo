@@ -1,8 +1,11 @@
 package com.kimambo.mobimeo.repository;
 
 import com.kimambo.mobimeo.domain.Delay;
+import com.kimambo.mobimeo.exceptions.InvalidFormatException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,13 +13,22 @@ import java.util.List;
 public class DelayRepositoryImpl implements DelayRepository {
 
     private List<Delay> delays;
+    private CsvReader<Delay> delayReader;
+
 
     public DelayRepositoryImpl(){
-        delays = new ArrayList<>();
 
-        delays.add(new Delay("M4", 1));
-        delays.add(new Delay("200", 2));
-        delays.add(new Delay("S75", 10));
+        try {
+            delays = new ArrayList<>();
+            DelayParser delayParser = new DelayParser();
+            CsvReader<Delay> delayReader = new CsvReaderImpl<>("./data/delays.csv", delayParser);
+            delays = delayReader.getValues();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
